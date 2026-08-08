@@ -27,6 +27,7 @@ Também permite consultar permutas futuras por RG, informa quando uma solicitaç
 * aviso no e-mail quando a solicitação estiver fora do prazo;
 * envio de resultado de permuta autorizada ou cancelada;
 * consulta de permutas futuras por RG;
+* consulta do histórico de permutas dos últimos 40 dias por RG;
 * solicitação de cancelamento de permutas pendentes;
 * confirmação de cancelamento por código enviado ao e-mail;
 * bloqueio de cancelamento para permutas já analisadas;
@@ -73,9 +74,9 @@ v3 = versão com interface no GitHub Pages e backend em Google Apps Script
 
 ## Versão atual
 
-Versão atual: v3.66
+Versão atual: v3.67
 
-A versão v3.66 indica que o sistema utiliza a interface hospedada no GitHub Pages, com backend/API na implantação 66 do Google Apps Script.
+A versão v3.67 indica que o sistema utiliza a interface hospedada no GitHub Pages, com backend/API na implantação 67 do Google Apps Script.
 
 ## Observação
 

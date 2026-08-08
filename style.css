@@ -216,6 +216,20 @@ button:disabled {
   background: #dbeafe;
 }
 
+.botao-historico {
+  color: #485fc7;
+  border-color: #485fc7;
+  background: #f3f4ff;
+}
+
+.botao-historico:hover {
+  background: #e7e9ff;
+}
+
+.historico-box {
+  margin-top: 12px;
+}
+
 .mensagem {
   margin-top: 26px;
   padding: 16px;
@@ -456,4 +470,19 @@ button {
   line-height: 1.35;
   font-weight: 800;
   text-align: center;
+}
+
+.card-historico {
+  background: #fbfbff;
+  border-color: #dcdff5;
+}
+
+.motivo-cancelamento-historico {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #842029;
+  font-size: 13px;
+  line-height: 1.4;
 }

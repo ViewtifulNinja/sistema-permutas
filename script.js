@@ -16,6 +16,12 @@ const rgConsulta = document.getElementById("rgConsulta");
 const btnConsultar = document.getElementById("btnConsultar");
 const resultadoConsulta = document.getElementById("resultadoConsulta");
 
+const btnAbrirHistorico = document.getElementById("btnAbrirHistorico");
+const areaHistorico = document.getElementById("areaHistorico");
+const rgHistorico = document.getElementById("rgHistorico");
+const btnConsultarHistorico = document.getElementById("btnConsultarHistorico");
+const resultadoHistorico = document.getElementById("resultadoHistorico");
+
 let militaresPorRG = {};
 let timerConsultaEntra = null;
 let timerConsultaSai = null;
@@ -113,6 +119,22 @@ rgConsulta.addEventListener("input", () => {
 
 btnConsultar.addEventListener("click", () => {
   consultarPermutasFuturas();
+});
+
+btnAbrirHistorico.addEventListener("click", () => {
+  areaHistorico.classList.toggle("ativa");
+
+  if (areaHistorico.classList.contains("ativa")) {
+    rgHistorico.focus();
+  }
+});
+
+rgHistorico.addEventListener("input", () => {
+  rgHistorico.value = limparRG(rgHistorico.value);
+});
+
+btnConsultarHistorico.addEventListener("click", () => {
+  consultarHistoricoPermutas();
 });
 
 resultadoConsulta.addEventListener("input", (e) => {
@@ -260,414 +282,4 @@ function verificarPrazoPermuta() {
   const limiteMinimo = new Date();
   limiteMinimo.setHours(limiteMinimo.getHours() + 48);
 
-  if (dataSelecionada < limiteMinimo) {
-    avisoPrazoPermuta.textContent =
-      "AtenÃ§Ã£o: esta solicitaÃ§Ã£o estÃ¡ fora do prazo regulamentar de 48 horas de antecedÃªncia. A permuta serÃ¡ registrada, mas ficarÃ¡ sujeita Ã  anÃ¡lise administrativa.";
-    avisoPrazoPermuta.classList.add("ativo");
-  }
-}
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  verificarPrazoPermuta();
-
-  btnEnviar.disabled = true;
-  btnEnviar.textContent = "Enviando...";
-  mensagem.className = "mensagem";
-  mensagem.textContent = "";
-
-  const dados = {
-    email: document.getElementById("email").value,
-    dataServico: document.getElementById("dataServico").value,
-    rgEntra: document.getElementById("rgEntra").value,
-    rgSai: document.getElementById("rgSai").value,
-    observacoes: document.getElementById("observacoes").value
-  };
-
-  try {
-    const resultado = await chamarApi("enviarPermuta", dados);
-    const resposta = resultado.resposta || resultado;
-
-    mensagem.innerHTML =
-      escaparHtml(resposta.mensagem || "Permuta enviada com sucesso.") +
-      "<br><br><strong>Data do serviÃ§o:</strong> " + formatarDataBrasileira(dados.dataServico) +
-      "<br><strong>Entra:</strong> " + escaparHtml(resposta.militarEntra || resposta.nomeEntra || "") +
-      "<br><strong>Sai:</strong> " + escaparHtml(resposta.militarSai || resposta.nomeSai || "");
-
-    mensagem.className = "mensagem sucesso";
-
-    form.reset();
-    idEntra.textContent = "";
-    idSai.textContent = "";
-    avisoPrazoPermuta.textContent = "";
-    avisoPrazoPermuta.classList.remove("ativo");
-
-    if (resposta.linhaProcessamento) {
-      tentarProcessarPermuta(resposta.linhaProcessamento, 1);
-    } else {
-      console.log("Linha de processamento nÃ£o retornada.");
-    }
-
-  } catch (erro) {
-    mensagem.textContent = erro.message;
-    mensagem.className = "mensagem erro";
-  } finally {
-    btnEnviar.disabled = false;
-    btnEnviar.textContent = "Enviar SolicitaÃ§Ã£o";
-  }
-});
-
-async function consultarPermutasFuturas() {
-  const rg = limparRG(rgConsulta.value);
-
-  resultadoConsulta.innerHTML = "";
-  ultimoRgConsultado = rg;
-
-  if (rg.length < 4) {
-    resultadoConsulta.innerHTML =
-      '<div class="mensagem-consulta">Informe um RG vÃ¡lido para consultar.</div>';
-    return;
-  }
-
-  btnConsultar.disabled = true;
-  btnConsultar.textContent = "Consultando...";
-
-  try {
-    const resultado = await chamarApi("consultarPermutasFuturas", {
-      rg: rg,
-      rgConsulta: rg
-    });
-
-    const resposta = resultado.resposta || resultado;
-    const permutas = Array.isArray(resposta) ? resposta : (resposta.permutas || []);
-
-    exibirPermutasFuturas(permutas, rg);
-
-  } catch (erro) {
-    resultadoConsulta.innerHTML =
-      '<div class="mensagem-consulta">' + escaparHtml(erro.message) + '</div>';
-  } finally {
-    btnConsultar.disabled = false;
-    btnConsultar.textContent = "Consultar";
-  }
-}
-
-function exibirPermutasFuturas(permutas, rgConsultadoParametro) {
-  console.log("Permutas recebidas:", permutas);
-
-  if (!permutas || permutas.length === 0) {
-    resultadoConsulta.innerHTML =
-      '<div class="mensagem-consulta">Nenhuma permuta futura encontrada para este RG.</div>';
-    return;
-  }
-
-  const rgConsultado = limparRG(rgConsultadoParametro || ultimoRgConsultado || rgConsulta.value);
-
-  let html = "";
-
-  permutas.forEach((permuta, indice) => {
-    const chave = "p" + indice;
-    const classeStatus = obterClasseStatus(permuta.status);
-    const podeCancelar = verificarPodeCancelar(permuta.podeCancelar);
-    const linha = String(permuta.linha || permuta.row || permuta.numeroLinha || "").trim();
-    const idPermuta = String(permuta.idPermuta || permuta.id || permuta.identificador || linha).trim();
-    const dataServicoTexto = permuta.dataServico || permuta.data || permuta.dataServicoFormatada || "";
-    const militarEntra = permuta.militarEntra || permuta.nomeEntra || permuta.entra || "";
-    const militarSai = permuta.militarSai || permuta.nomeSai || permuta.sai || "";
-
-    const botaoCancelar = podeCancelar
-      ? `
-        <button type="button" class="botao-cancelar" data-chave="${escaparHtml(chave)}">
-          Solicitar Cancelamento
-        </button>
-
-        <div class="area-cancelamento" id="cancelamento-${escaparHtml(chave)}">
-          <input type="email" class="email-cancelamento" placeholder="E-mail cadastrado no RG consultado" autocomplete="email">
-
-          <button type="button" class="botao-enviar-codigo" data-chave="${escaparHtml(chave)}" data-linha="${escaparHtml(linha)}" data-id-permuta="${escaparHtml(idPermuta)}" data-rg-consulta="${escaparHtml(rgConsultado)}">
-            Enviar CÃ³digo
-          </button>
-
-          <input type="text" class="codigo-cancelamento" inputmode="numeric" maxlength="6" placeholder="CÃ³digo recebido">
-
-          <button type="button" class="botao-confirmar-cancelamento" data-chave="${escaparHtml(chave)}" data-linha="${escaparHtml(linha)}" data-id-permuta="${escaparHtml(idPermuta)}" data-rg-consulta="${escaparHtml(rgConsultado)}">
-            Confirmar Cancelamento
-          </button>
-
-          <div class="mensagem-cancelamento"></div>
-        </div>
-      `
-      : gerarAvisoCancelamentoIndisponivel(permuta);
-
-    html += `
-      <div class="card-permuta">
-        <div class="data">${escaparHtml(dataServicoTexto)}</div>
-
-        <div class="linha-permuta">
-          <span class="rotulo">Entra:</span> ${escaparHtml(militarEntra)}
-        </div>
-
-        <div class="linha-permuta">
-          <span class="rotulo">Sai:</span> ${escaparHtml(militarSai)}
-        </div>
-
-        <div class="status ${classeStatus}">
-          ${escaparHtml(permuta.status || "PENDENTE")}
-        </div>
-
-        ${botaoCancelar}
-      </div>
-    `;
-  });
-
-  resultadoConsulta.innerHTML = html;
-}
-
-function verificarPodeCancelar(valor) {
-  const texto = String(valor || "").trim().toUpperCase();
-
-  return (
-    valor === true ||
-    texto === "TRUE" ||
-    texto === "VERDADEIRO" ||
-    texto === "SIM" ||
-    texto === "1"
-  );
-}
-
-function gerarAvisoCancelamentoIndisponivel(permuta) {
-  const motivo = String(
-    permuta.motivoBloqueioCancelamento ||
-    permuta.motivoBloqueio ||
-    "Entre em contato com a administraÃ§Ã£o."
-  ).trim();
-
-  return `
-    <div class="aviso-cancelamento-indisponivel">
-      Cancelamento indisponÃ­vel: ${escaparHtml(motivo)}
-    </div>
-  `;
-}
-
-function obterClasseStatus(status) {
-  const texto = String(status || "").trim().toUpperCase();
-
-  if (texto === "AUTORIZADA" || texto === "FEITO") return "status-feito";
-  if (texto === "CANCELADA") return "status-cancelada";
-
-  return "status-pendente";
-}
-
-function escaparHtml(valor) {
-  return String(valor || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function formatarDataBrasileira(dataIso) {
-  const partes = String(dataIso || "").split("-");
-
-  if (partes.length !== 3) return escaparHtml(dataIso);
-
-  return partes[2] + "/" + partes[1] + "/" + partes[0];
-}
-
-function tentarProcessarPermuta(linha, tentativa) {
-  const atraso = tentativa === 1 ? 1500 : 6000;
-
-  setTimeout(() => {
-    chamarApi("processarPermutaPendente", {
-      linha: linha
-    })
-      .then((resultadoProcessamento) => {
-        console.log("Retorno do processamento complementar:", resultadoProcessamento);
-
-        const respostaProcessamento = resultadoProcessamento.resposta || {};
-
-        if (respostaProcessamento.pendente && tentativa < 2) {
-          console.log("Processamento ocupado. Tentando novamente...");
-          tentarProcessarPermuta(linha, tentativa + 1);
-        }
-      })
-      .catch((erro) => {
-        console.log("Erro no processamento complementar:", erro.message);
-
-        if (tentativa < 2) {
-          tentarProcessarPermuta(linha, tentativa + 1);
-        }
-      });
-  }, atraso);
-}
-
-function validarEmailCancelamento(rgConsultado, email) {
-  const emailNormalizado = normalizarEmail(email);
-
-  if (!emailNormalizado) {
-    return "Informe o e-mail cadastrado para o RG consultado.";
-  }
-
-  const militarConsultado = militaresPorRG[rgConsultado];
-  const emailsCadastrados = obterEmailsMilitar(militarConsultado);
-
-  if (emailsCadastrados.length > 0 && !emailsCadastrados.includes(emailNormalizado)) {
-    return "O e-mail informado nÃ£o pertence ao RG consultado. Informe o e-mail cadastrado para esse militar.";
-  }
-
-  return "";
-}
-
-function montarPayloadCancelamento(params, dadosExtras = {}) {
-  const linha = String(params.linha || "").trim();
-  const idPermuta = String(params.idPermuta || linha || "").trim();
-  const rgConsultado = limparRG(params.rgConsulta || ultimoRgConsultado || rgConsulta.value);
-
-  return {
-    linha: linha,
-    row: linha,
-    idPermuta: idPermuta,
-    id: idPermuta,
-    rgConsulta: rgConsultado,
-    rg: rgConsultado,
-    ...dadosExtras
-  };
-}
-
-async function solicitarCodigoCancelamento(params, rgConsultaCancelamento) {
-  if (!params || typeof params !== "object") {
-    params = {
-      chave: params,
-      linha: params,
-      idPermuta: params,
-      rgConsulta: rgConsultaCancelamento
-    };
-  }
-
-  const area = document.getElementById("cancelamento-" + params.chave);
-
-  if (!area) return;
-
-  const emailInput = area.querySelector(".email-cancelamento");
-  const mensagemCancelamento = area.querySelector(".mensagem-cancelamento");
-  const botao = area.querySelector(".botao-enviar-codigo");
-
-  const email = normalizarEmail(emailInput.value);
-  const rgConsultado = limparRG(params.rgConsulta || ultimoRgConsultado || rgConsulta.value);
-
-  mensagemCancelamento.textContent = "";
-  mensagemCancelamento.className = "mensagem-cancelamento";
-
-  if (!rgConsultado) {
-    mensagemCancelamento.textContent = "RG da consulta nÃ£o identificado. Atualize a consulta e tente novamente.";
-    mensagemCancelamento.classList.add("erro");
-    return;
-  }
-
-  const erroEmail = validarEmailCancelamento(rgConsultado, email);
-
-  if (erroEmail) {
-    mensagemCancelamento.textContent = erroEmail;
-    mensagemCancelamento.classList.add("erro");
-    return;
-  }
-
-  botao.disabled = true;
-  botao.textContent = "Enviando...";
-
-  try {
-    const resultado = await chamarApi("solicitarCodigoCancelamentoPermuta", montarPayloadCancelamento(params, {
-      email: email,
-      emailConfirmacao: email
-    }));
-
-    mensagemCancelamento.textContent =
-      resultado.mensagem || "CÃ³digo enviado para o e-mail cadastrado no RG consultado.";
-    mensagemCancelamento.classList.add("sucesso");
-
-  } catch (erro) {
-    mensagemCancelamento.textContent = erro.message;
-    mensagemCancelamento.classList.add("erro");
-
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "Enviar CÃ³digo";
-  }
-}
-
-async function confirmarCancelamento(params, rgConsultaCancelamento) {
-  if (!params || typeof params !== "object") {
-    params = {
-      chave: params,
-      linha: params,
-      idPermuta: params,
-      rgConsulta: rgConsultaCancelamento
-    };
-  }
-
-  const area = document.getElementById("cancelamento-" + params.chave);
-
-  if (!area) return;
-
-  const emailInput = area.querySelector(".email-cancelamento");
-  const codigoInput = area.querySelector(".codigo-cancelamento");
-  const mensagemCancelamento = area.querySelector(".mensagem-cancelamento");
-  const botao = area.querySelector(".botao-confirmar-cancelamento");
-
-  const email = normalizarEmail(emailInput.value);
-  const codigo = String(codigoInput.value || "").replace(/\D/g, "").slice(0, 6);
-  const rgConsultado = limparRG(params.rgConsulta || ultimoRgConsultado || rgConsulta.value);
-
-  codigoInput.value = codigo;
-  mensagemCancelamento.textContent = "";
-  mensagemCancelamento.className = "mensagem-cancelamento";
-
-  if (!rgConsultado) {
-    mensagemCancelamento.textContent = "RG da consulta nÃ£o identificado. Atualize a consulta e tente novamente.";
-    mensagemCancelamento.classList.add("erro");
-    return;
-  }
-
-  const erroEmail = validarEmailCancelamento(rgConsultado, email);
-
-  if (erroEmail) {
-    mensagemCancelamento.textContent = erroEmail;
-    mensagemCancelamento.classList.add("erro");
-    return;
-  }
-
-  if (!codigo) {
-    mensagemCancelamento.textContent = "Informe o cÃ³digo recebido por e-mail.";
-    mensagemCancelamento.classList.add("erro");
-    return;
-  }
-
-  botao.disabled = true;
-  botao.textContent = "Confirmando...";
-
-  try {
-    const resultado = await chamarApi("confirmarCancelamentoPermuta", montarPayloadCancelamento(params, {
-      email: email,
-      emailConfirmacao: email,
-      codigo: codigo
-    }));
-
-    mensagemCancelamento.textContent =
-      resultado.mensagem || "Cancelamento registrado com sucesso.";
-    mensagemCancelamento.classList.add("sucesso");
-
-    setTimeout(() => {
-      consultarPermutasFuturas();
-    }, 1200);
-
-  } catch (erro) {
-    mensagemCancelamento.textContent = erro.message;
-    mensagemCancelamento.classList.add("erro");
-
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "Confirmar Cancelamento";
-  }
-}
+ #oxòÚ$z{-®éÜj×¥Ù½	±½ÅÕ•¥½…¹•±…µ•¹Ñ¼ñğ4(€€€Á•ÉµÕÑ„¹µ½Ñ¥Ù½	±½ÅÕ•¥¼ñğ4(€€€€‰¹ÑÉ”•´½¹Ñ…Ñ¼½´„…‘µ¥¹¥ÍÑÉ‡Ÿ¼¸ˆ4(€€¤¹ÑÉ¥´ ¤ì4(4(€É•ÑÕÉ¸€4(€€€€ñ‘¥Ø±…ÍÌô‰…Ù¥Í¼µ…¹•±…µ•¹Ñ¼µ¥¹‘¥ÍÁ½¹¥Ù•°ˆø4(€€€€€…¹•±…µ•¹Ñ¼¥¹‘¥ÍÁ½»µÙ•°è€‘í•Í…Á…É!Ñµ°¡µ½Ñ¥Ù¼¥ô4(€€€€ğ½‘¥Øø4(€€ì4)ô4(4)™Õ¹Ñ¥½¸½‰Ñ•É±…ÍÍ•MÑ…ÑÕÌ¡ÍÑ…ÑÕÌ¤ì4(€½¹ÍĞÑ•áÑ¼€ôMÑÉ¥¹œ¡ÍÑ…ÑÕÌñğ€ˆˆ¤¹ÑÉ¥´ ¤¹Ñ½UÁÁ•É…Í” ¤ì4(4(€¥˜€¡Ñ•áÑ¼€ôôô€‰UQ=I%iˆñğÑ•áÑ¼€ôôô€‰%Q<ˆ¤É•ÑÕÉ¸€‰ÍÑ…ÑÕÌµ™•¥Ñ¼ˆì4(€¥˜€¡Ñ•áÑ¼€ôôô€‰91ˆ¤É•ÑÕÉ¸€‰ÍÑ…ÑÕÌµ…¹•±…‘„ˆì4(4(€É•ÑÕÉ¸€‰ÍÑ…ÑÕÌµÁ•¹‘•¹Ñ”ˆì4)ô4(4)™Õ¹Ñ¥½¸•Í…Á…É!Ñµ°¡Ù…±½È¤ì4(€É•ÑÕÉ¸MÑÉ¥¹œ¡Ù…±½Èñğ€ˆˆ¤4(€€€€¹É•Á±…” ¼˜½œ°€ˆ™…µÀìˆ¤4(€€€€¹É•Á±…” ¼ğ½œ°€ˆ™±Ğìˆ¤4(€€€€¹É•Á±…” ¼ø½œ°€ˆ™Ğìˆ¤4(€€€€¹É•Á±…” ¼ˆ½œ°€ˆ™ÅÕ½Ğìˆ¤4(€€€€¹É•Á±…” ¼œ½œ°€ˆ˜ŒÀÌäìˆ¤ì4)ô4(4)™Õ¹Ñ¥½¸™½Éµ…Ñ…É…Ñ…	É…Í¥±•¥É„¡‘…Ñ…%Í¼¤ì4(€½¹ÍĞÁ…ÉÑ•Ì€ôMÑÉ¥¹œ¡‘…Ñ…%Í¼ñğ€ˆˆ¤¹ÍÁ±¥Ğ ˆ´ˆ¤ì4(4(€¥˜€¡Á…ÉÑ•Ì¹±•¹Ñ €„ôô€Ì¤É•ÑÕÉ¸•Í…Á…É!Ñµ°¡‘…Ñ…%Í¼¤ì4(4(€É•ÑÕÉ¸Á…ÉÑ•ÍlÉt€¬€ˆ¼ˆ€¬Á…ÉÑ•ÍlÅt€¬€ˆ¼ˆ€¬Á…ÉÑ•ÍlÁtì4)ô4(4)™Õ¹Ñ¥½¸Ñ•¹Ñ…ÉAÉ½•ÍÍ…ÉA•ÉµÕÑ„¡±¥¹¡„°Ñ•¹Ñ…Ñ¥Ù„¤ì4(€½¹ÍĞ…ÑÉ…Í¼€ôÑ•¹Ñ…Ñ¥Ù„€ôôô€Ä€ü€ÄÔÀÀ€è€ØÀÀÀì4(4(€Í•ÑQ¥µ•½ÕĞ  ¤€ôøì4(€€€¡…µ…ÉÁ¤ ‰ÁÉ½•ÍÍ…ÉA•ÉµÕÑ…A•¹‘•¹Ñ”ˆ°ì4(€€€€€±¥¹¡„è±¥¹¡„4(€€€ô¤4(€€€€€€¹Ñ¡•¸ ¡É•ÍÕ±Ñ…‘½AÉ½•ÍÍ…µ•¹Ñ¼¤€ôøì4(€€€€€€€½¹Í½±”¹±½œ ‰I•Ñ½É¹¼‘¼ÁÉ½•ÍÍ…µ•¹Ñ¼½µÁ±•µ•¹Ñ…Èèˆ°É•ÍÕ±Ñ…‘½AÉ½•ÍÍ…µ•¹Ñ¼¤ì4(4(€€€€€€€½¹ÍĞÉ•ÍÁ½ÍÑ…AÉ½•ÍÍ…µ•¹Ñ¼€ôÉ•ÍÕ±Ñ…‘½AÉ½•ÍÍ…µ•¹Ñ¼¹É•ÍÁ½ÍÑ„ñğíôì4(4(€€€€€€€¥˜€¡É•ÍÁ½ÍÑ…AÉ½•ÍÍ…µ•¹Ñ¼¹Á•¹‘•¹Ñ”€˜˜Ñ•¹Ñ…Ñ¥Ù„€ğ€È¤ì4(€€€€€€€€€½¹Í½±”¹±½œ ‰AÉ½•ÍÍ…µ•¹Ñ¼½ÕÁ…‘¼¸Q•¹Ñ…¹‘¼¹½Ù…µ•¹Ñ”¸¸¸ˆ¤ì4(€€€€€€€€€Ñ•¹Ñ…ÉAÉ½•ÍÍ…ÉA•ÉµÕÑ„¡±¥¹¡„°Ñ•¹Ñ…Ñ¥Ù„€¬€Ä¤ì4(€€€€€€€ô4(€€€€€ô¤4(€€€€€€¹…Ñ  ¡•ÉÉ¼¤€ôøì4(€€€€€€€½¹Í½±”¹±½œ ‰ÉÉ¼¹¼ÁÉ½•ÍÍ…µ•¹Ñ¼½µÁ±•µ•¹Ñ…Èèˆ°•ÉÉ¼¹µ•ÍÍ…”¤ì4(4(€€€€€€€¥˜€¡Ñ•¹Ñ…Ñ¥Ù„€ğ€È¤ì4(€€€€€€€€€Ñ•¹Ñ…ÉAÉ½•ÍÍ…ÉA•ÉµÕÑ„¡±¥¹¡„°Ñ•¹Ñ…Ñ¥Ù„€¬€Ä¤ì4(€€€€€€€ô4(€€€€€ô¤ì4(€ô°…ÑÉ…Í¼¤ì4)ô4(4)™Õ¹Ñ¥½¸Ù…±¥‘…Éµ…¥±…¹•±…µ•¹Ñ¼¡É½¹ÍÕ±Ñ…‘¼°•µ…¥°¤ì4(€½¹ÍĞ•µ…¥±9½Éµ…±¥é…‘¼€ô¹½Éµ…±¥é…Éµ…¥°¡•µ…¥°¤ì4(4(€¥˜€ …•µ…¥±9½Éµ…±¥é…‘¼¤ì4(€€€É•ÑÕÉ¸€‰%¹™½Éµ”¼”µµ…¥°…‘…ÍÑÉ…‘¼Á…É„¼I½¹ÍÕ±Ñ…‘¼¸ˆì4(€ô4(4(€½¹ÍĞµ¥±¥Ñ…É½¹ÍÕ±Ñ…‘¼€ôµ¥±¥Ñ…É•ÍA½ÉImÉ½¹ÍÕ±Ñ…‘½tì4(€½¹ÍĞ•µ…¥±Í…‘…ÍÑÉ…‘½Ì€ô½‰Ñ•Éµ…¥±Í5¥±¥Ñ…È¡µ¥±¥Ñ…É½¹ÍÕ±Ñ…‘¼¤ì4(4(€¥˜€¡•µ…¥±Í…‘…ÍÑÉ…‘½Ì¹±•¹Ñ €ø€À€˜˜€…•µ…¥±Í…‘…ÍÑÉ…‘½Ì¹¥¹±Õ‘•Ì¡•µ…¥±9½Éµ…±¥é…‘¼¤¤ì4(€€€É•ÑÕÉ¸€‰<”µµ…¥°¥¹™½Éµ…‘¼»¼Á•ÉÑ•¹”…¼I½¹ÍÕ±Ñ…‘¼¸%¹™½Éµ”¼”µµ…¥°…‘…ÍÑÉ…‘¼Á…É„•ÍÍ”µ¥±¥Ñ…È¸ˆì4(€ô4(4(€É•ÑÕÉ¸€ˆˆì4)ô4(4)™Õ¹Ñ¥½¸µ½¹Ñ…ÉA…å±½…‘…¹•±…µ•¹Ñ¼¡Á…É…µÌ°‘…‘½ÍáÑÉ…Ì€ôíô¤ì4(€½¹ÍĞ±¥¹¡„€ôMÑÉ¥¹œ¡Á…É…µÌ¹±¥¹¡„ñğ€ˆˆ¤¹ÑÉ¥´ ¤ì4(€½¹ÍĞ¥‘A•ÉµÕÑ„€ôMÑÉ¥¹œ¡Á…É…µÌ¹¥‘A•ÉµÕÑ„ñğ±¥¹¡„ñğ€ˆˆ¤¹ÑÉ¥´ ¤ì4(€½¹ÍĞÉ½¹ÍÕ±Ñ…‘¼€ô±¥µÁ…ÉI¡Á…É…µÌ¹É½¹ÍÕ±Ñ„ñğÕ±Ñ¥µ½I½¹ÍÕ±Ñ…‘¼ñğÉ½¹ÍÕ±Ñ„¹Ù…±Õ”¤ì4(4(€É•ÑÕÉ¸ì4(€€€±¥¹¡„è±¥¹¡„°4(€€€É½Üè±¥¹¡„°4(€€€¥‘A•ÉµÕÑ„è¥‘A•ÉµÕÑ„°4(€€€¥è¥‘A•ÉµÕÑ„°4(€€€É½¹ÍÕ±Ñ„èÉ½¹ÍÕ±Ñ…‘¼°4(€€€ÉœèÉ½¹ÍÕ±Ñ…‘¼°4(€€€€¸¸¹‘…‘½ÍáÑÉ…Ì4(€ôì4)ô4(4)…Íå¹Œ™Õ¹Ñ¥½¸Í½±¥¥Ñ…É½‘¥½…¹•±…µ•¹Ñ¼¡Á…É…µÌ°É½¹ÍÕ±Ñ……¹•±…µ•¹Ñ¼¤ì4(€¥˜€ …Á…É…µÌñğÑåÁ•½˜Á…É…µÌ€„ôô€‰½‰©•Ğˆ¤ì4(€€€Á…É…µÌ€ôì4(€€€€€¡…Ù”èÁ…É…µÌ°4(€€€€€±¥¹¡„èÁ…É…µÌ°4(€€€€€¥‘A•ÉµÕÑ„èÁ…É…µÌ°4(€€€€€É½¹ÍÕ±Ñ„èÉ½¹ÍÕ±Ñ……¹•±…µ•¹Ñ¼4(€€€ôì4(€ô4(4(€½¹ÍĞ…É•„€ô‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰…¹•±…µ•¹Ñ¼´ˆ€¬Á…É…µÌ¹¡…Ù”¤ì4(4(€¥˜€ ……É•„¤É•ÑÕÉ¸ì4(4(€½¹ÍĞ•µ…¥±%¹ÁÕĞ€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹•µ…¥°µ…¹•±…µ•¹Ñ¼ˆ¤ì4(€½¹ÍĞµ•¹Í…•µ…¹•±…µ•¹Ñ¼€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹µ•¹Í…•´µ…¹•±…µ•¹Ñ¼ˆ¤ì4(€½¹ÍĞ‰½Ñ…¼€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹‰½Ñ…¼µ•¹Ù¥…Èµ½‘¥¼ˆ¤ì4(4(€½¹ÍĞ•µ…¥°€ô¹½Éµ…±¥é…Éµ…¥°¡•µ…¥±%¹ÁÕĞ¹Ù…±Õ”¤ì4(€½¹ÍĞÉ½¹ÍÕ±Ñ…‘¼€ô±¥µÁ…ÉI¡Á…É…µÌ¹É½¹ÍÕ±Ñ„ñğÕ±Ñ¥µ½I½¹ÍÕ±Ñ…‘¼ñğÉ½¹ÍÕ±Ñ„¹Ù…±Õ”¤ì4(4(€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€ˆˆì4(€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ9…µ”€ô€‰µ•¹Í…•´µ…¹•±…µ•¹Ñ¼ˆì4(4(€¥˜€ …É½¹ÍÕ±Ñ…‘¼¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰I‘„½¹ÍÕ±Ñ„»¼¥‘•¹Ñ¥™¥…‘¼¸ÑÕ…±¥é”„½¹ÍÕ±Ñ„”Ñ•¹Ñ”¹½Ù…µ•¹Ñ”¸ˆì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(€€€É•ÑÕÉ¸ì4(€ô4(4(€½¹ÍĞ•ÉÉ½µ…¥°€ôÙ…±¥‘…Éµ…¥±…¹•±…µ•¹Ñ¼¡É½¹ÍÕ±Ñ…‘¼°•µ…¥°¤ì4(4(€¥˜€¡•ÉÉ½µ…¥°¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô•ÉÉ½µ…¥°ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(€€€É•ÑÕÉ¸ì4(€ô4(4(€‰½Ñ…¼¹‘¥Í…‰±•€ôÑÉÕ”ì4(€‰½Ñ…¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰¹Ù¥…¹‘¼¸¸¸ˆì4(4(€ÑÉäì4(€€€½¹ÍĞÉ•ÍÕ±Ñ…‘¼€ô…İ…¥Ğ¡…µ…ÉÁ¤ ‰Í½±¥¥Ñ…É½‘¥½…¹•±…µ•¹Ñ½A•ÉµÕÑ„ˆ°µ½¹Ñ…ÉA…å±½…‘…¹•±…µ•¹Ñ¼¡Á…É…µÌ°ì4(€€€€€•µ…¥°è•µ…¥°°4(€€€€€•µ…¥±½¹™¥Éµ……¼è•µ…¥°4(€€€ô¤¤ì4(4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô4(€€€€€É•ÍÕ±Ñ…‘¼¹µ•¹Í…•´ñğ€‰Í‘¥¼•¹Ù¥…‘¼Á…É„¼”µµ…¥°…‘…ÍÑÉ…‘¼¹¼I½¹ÍÕ±Ñ…‘¼¸ˆì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰ÍÕ•ÍÍ¼ˆ¤ì4(4(€ô…Ñ €¡•ÉÉ¼¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô•ÉÉ¼¹µ•ÍÍ…”ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(4(€ô™¥¹…±±äì4(€€€‰½Ñ…¼¹‘¥Í…‰±•€ô™…±Í”ì4(€€€‰½Ñ…¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰¹Ù¥…ÈÍ‘¥¼ˆì4(€ô4)ô4(4)…Íå¹Œ™Õ¹Ñ¥½¸½¹™¥Éµ…É…¹•±…µ•¹Ñ¼¡Á…É…µÌ°É½¹ÍÕ±Ñ……¹•±…µ•¹Ñ¼¤ì4(€¥˜€ …Á…É…µÌñğÑåÁ•½˜Á…É…µÌ€„ôô€‰½‰©•Ğˆ¤ì4(€€€Á…É…µÌ€ôì4(€€€€€¡…Ù”èÁ…É…µÌ°4(€€€€€±¥¹¡„èÁ…É…µÌ°4(€€€€€¥‘A•ÉµÕÑ„èÁ…É…µÌ°4(€€€€€É½¹ÍÕ±Ñ„èÉ½¹ÍÕ±Ñ……¹•±…µ•¹Ñ¼4(€€€ôì4(€ô4(4(€½¹ÍĞ…É•„€ô‘½Õµ•¹Ğ¹•Ñ±•µ•¹Ñ	å% ‰…¹•±…µ•¹Ñ¼´ˆ€¬Á…É…µÌ¹¡…Ù”¤ì4(4(€¥˜€ ……É•„¤É•ÑÕÉ¸ì4(4(€½¹ÍĞ•µ…¥±%¹ÁÕĞ€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹•µ…¥°µ…¹•±…µ•¹Ñ¼ˆ¤ì4(€½¹ÍĞ½‘¥½%¹ÁÕĞ€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹½‘¥¼µ…¹•±…µ•¹Ñ¼ˆ¤ì4(€½¹ÍĞµ•¹Í…•µ…¹•±…µ•¹Ñ¼€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹µ•¹Í…•´µ…¹•±…µ•¹Ñ¼ˆ¤ì4(€½¹ÍĞ‰½Ñ…¼€ô…É•„¹ÅÕ•ÉåM•±•Ñ½È ˆ¹‰½Ñ…¼µ½¹™¥Éµ…Èµ…¹•±…µ•¹Ñ¼ˆ¤ì4(4(€½¹ÍĞ•µ…¥°€ô¹½Éµ…±¥é…Éµ…¥°¡•µ…¥±%¹ÁÕĞ¹Ù…±Õ”¤ì4(€½¹ÍĞ½‘¥¼€ôMÑÉ¥¹œ¡½‘¥½%¹ÁÕĞ¹Ù…±Õ”ñğ€ˆˆ¤¹É•Á±…” ½q½œ°€ˆˆ¤¹Í±¥” À°€Ø¤ì4(€½¹ÍĞÉ½¹ÍÕ±Ñ…‘¼€ô±¥µÁ…ÉI¡Á…É…µÌ¹É½¹ÍÕ±Ñ„ñğÕ±Ñ¥µ½I½¹ÍÕ±Ñ…‘¼ñğÉ½¹ÍÕ±Ñ„¹Ù…±Õ”¤ì4(4(€½‘¥½%¹ÁÕĞ¹Ù…±Õ”€ô½‘¥¼ì4(€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€ˆˆì4(€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ9…µ”€ô€‰µ•¹Í…•´µ…¹•±…µ•¹Ñ¼ˆì4(4(€¥˜€ …É½¹ÍÕ±Ñ…‘¼¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰I‘„½¹ÍÕ±Ñ„»¼¥‘•¹Ñ¥™¥…‘¼¸ÑÕ…±¥é”„½¹ÍÕ±Ñ„”Ñ•¹Ñ”¹½Ù…µ•¹Ñ”¸ˆì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(€€€É•ÑÕÉ¸ì4(€ô4(4(€½¹ÍĞ•ÉÉ½µ…¥°€ôÙ…±¥‘…Éµ…¥±…¹•±…µ•¹Ñ¼¡É½¹ÍÕ±Ñ…‘¼°•µ…¥°¤ì4(4(€¥˜€¡•ÉÉ½µ…¥°¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô•ÉÉ½µ…¥°ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(€€€É•ÑÕÉ¸ì4(€ô4(4(€¥˜€ …½‘¥¼¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰%¹™½Éµ”¼Í‘¥¼É••‰¥‘¼Á½È”µµ…¥°¸ˆì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(€€€É•ÑÕÉ¸ì4(€ô4(4(€‰½Ñ…¼¹‘¥Í…‰±•€ôÑÉÕ”ì4(€‰½Ñ…¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰½¹™¥Éµ…¹‘¼¸¸¸ˆì4(4(€ÑÉäì4(€€€½¹ÍĞÉ•ÍÕ±Ñ…‘¼€ô…İ…¥Ğ¡…µ…ÉÁ¤ ‰½¹™¥Éµ…É…¹•±…µ•¹Ñ½A•ÉµÕÑ„ˆ°µ½¹Ñ…ÉA…å±½…‘…¹•±…µ•¹Ñ¼¡Á…É…µÌ°ì4(€€€€€•µ…¥°è•µ…¥°°4(€€€€€•µ…¥±½¹™¥Éµ……¼è•µ…¥°°4(€€€€€½‘¥¼è½‘¥¼4(€€€ô¤¤ì4(4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô4(€€€€€É•ÍÕ±Ñ…‘¼¹µ•¹Í…•´ñğ€‰…¹•±…µ•¹Ñ¼É•¥ÍÑÉ…‘¼½´ÍÕ•ÍÍ¼¸ˆì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰ÍÕ•ÍÍ¼ˆ¤ì4(4(€€€Í•ÑQ¥µ•½ÕĞ  ¤€ôøì4(€€€€€½¹ÍÕ±Ñ…ÉA•ÉµÕÑ…ÍÕÑÕÉ…Ì ¤ì4(€€€ô°€ÄÈÀÀ¤ì4(4(€ô…Ñ €¡•ÉÉ¼¤ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô•ÉÉ¼¹µ•ÍÍ…”ì4(€€€µ•¹Í…•µ…¹•±…µ•¹Ñ¼¹±…ÍÍ1¥ÍĞ¹…‘ ‰•ÉÉ¼ˆ¤ì4(4(€ô™¥¹…±±äì4(€€€‰½Ñ…¼¹‘¥Í…‰±•€ô™…±Í”ì4(€€€‰½Ñ…¼¹Ñ•áÑ½¹Ñ•¹Ğ€ô€‰½¹™¥Éµ…È…¹•±…µ•¹Ñ¼ˆì4(€ô4)ô4
