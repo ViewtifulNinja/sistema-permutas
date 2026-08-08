@@ -453,7 +453,7 @@ function gerarAvisoCancelamentoIndisponivel(permuta) {
 function obterClasseStatus(status) {
   const texto = String(status || "").trim().toUpperCase();
 
-  if (texto === "FEITO") return "status-feito";
+  if (texto === "AUTORIZADA" || texto === "FEITO") return "status-feito";
   if (texto === "CANCELADA") return "status-cancelada";
 
   return "status-pendente";
