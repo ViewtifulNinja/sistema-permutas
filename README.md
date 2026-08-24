@@ -1,83 +1,55 @@
-# Sistema de Permutas
+# BravoNexo — Sistema de Permutas
 
-Sistema web desenvolvido para auxiliar o controle e a solicitação de permutas de serviço no âmbito do 1º GBM.
+Interface web compartilhada do módulo de Permutas do BravoNexo.
 
-## Sobre o projeto
+A implantação atualmente publicada atende ao **1º GBM**, mantendo o endereço já utilizado pela unidade:
 
-O Sistema de Permutas permite que o militar solicite uma permuta diretamente pelo celular, informando:
-
-* e-mail do responsável pela permuta;
-* data do serviço;
-* RG do militar que entra;
-* RG do militar que sai;
-* observações adicionais, quando necessário.
-
-O sistema realiza a identificação automática dos militares pelo RG, registra a solicitação em uma planilha de controle e envia e-mails automáticos de confirmação.
-
-Também permite consultar permutas futuras por RG, informa quando uma solicitação está fora do prazo regulamentar de 48 horas de antecedência e permite solicitar o cancelamento de permutas ainda pendentes de análise, mediante confirmação por código enviado ao e-mail de um dos militares envolvidos.
-
-## Funcionalidades
-
-* interface responsiva para uso em celular;
-* consulta automática de militares pelo RG;
-* validação do e-mail do responsável pela permuta;
-* registro direto em planilha Google Sheets;
-* envio automático de e-mails de confirmação de recebimento;
-* aviso visual para solicitações fora do prazo de 48 horas;
-* aviso no e-mail quando a solicitação estiver fora do prazo;
-* envio de resultado de permuta autorizada ou cancelada;
-* consulta de permutas futuras por RG;
-* consulta do histórico de permutas dos últimos 40 dias por RG;
-* solicitação de cancelamento de permutas pendentes;
-* confirmação de cancelamento por código enviado ao e-mail;
-* bloqueio de cancelamento para permutas já analisadas;
-* bloqueio de cancelamento fora do prazo mínimo de 48 horas;
-* registro automático do motivo do cancelamento na planilha;
-* controle de tentativas e validade do código de cancelamento;
-* controle de processamento das solicitações;
-* organização e formatação automática da planilha;
-* destaque visual na planilha para solicitações fora do prazo.
-
-## Estrutura do projeto
-
-index.html  → estrutura da página
-style.css   → aparência visual do sistema
-script.js   → funcionamento da interface e comunicação com o Apps Script
-brasao.png  → imagem utilizada no cabeçalho
-
-## Tecnologias utilizadas
-
-* HTML
-* CSS
-* JavaScript
-* GitHub Pages
-* Google Apps Script
-* Google Sheets
+- https://bmbrunocosta.github.io/sistema-permutas/
 
 ## Arquitetura
 
-Este repositório contém a interface web do sistema, hospedada pelo GitHub Pages.
+O projeto foi preparado para atender vários GBMs sem duplicação do código principal:
 
-O processamento dos dados, validações, envio de e-mails, controle de cancelamentos e integração com a planilha são realizados por meio de Google Apps Script, utilizado como backend/API do sistema.
+```text
+GitHub Pages        → interface compartilhada
+config/<unidade>.js → identificação e endereço do backend de cada GBM
+Google Apps Script  → processamento, validações e API da unidade
+Google Sheets       → base de dados administrativa da unidade
+```
 
-GitHub Pages → interface do usuário
-Google Apps Script → processamento e API
-Google Sheets → base de dados e controle administrativo
+Cada GBM deve continuar com sua própria conta Google, planilha, Apps Script e implantação. Apenas a interface comum é compartilhada.
 
-## Nomenclatura de versões
+## Estrutura
 
-A evolução do sistema segue a seguinte organização:
+```text
+index.html          estrutura da página
+style.css           aparência visual compartilhada
+script.js           funcionamento e comunicação com o backend
+config/01gbm.js     configuração ativa do 1º GBM
+brasao.png          brasão usado pela configuração do 1º GBM
+manifest.json       instalação como aplicativo/PWA do 1º GBM
+```
 
-v1 = versão baseada em Google Forms
-v2 = versão WebApp direto pelo Google Apps Script
-v3 = versão com interface no GitHub Pages e backend em Google Apps Script
+## Funcionalidades
 
-## Versão atual
+- solicitação de permuta;
+- identificação automática dos militares pelo RG;
+- validação do e-mail do responsável;
+- registro na planilha da unidade;
+- confirmação automática por e-mail;
+- aviso de solicitação fora do prazo de 48 horas;
+- consulta de permutas futuras;
+- histórico dos últimos 40 dias;
+- solicitação e confirmação de cancelamento por código;
+- bloqueio de cancelamento quando a permuta já foi analisada ou está fora do prazo.
 
-Versão atual: v3.67
+## Configuração atual
 
-A versão v3.67 indica que o sistema utiliza a interface hospedada no GitHub Pages, com backend/API na implantação 67 do Google Apps Script.
+- Unidade: 1º GBM
+- Configuração: `config/01gbm.js`
+- Interface: v3.68
+- Backend: implantação 68 do Apps Script
 
-## Observação
+## Segurança
 
-Este sistema é de uso interno e foi desenvolvido para apoiar a rotina administrativa de controle de permutas no 1º GBM.
+O GitHub Pages publica arquivos estáticos na internet. Não devem ser adicionados ao repositório senhas, tokens, chaves privadas ou dados pessoais. Toda autorização de leitura ou escrita deve ser validada no Apps Script.

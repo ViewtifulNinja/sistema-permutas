@@ -1,4 +1,26 @@
-const URL_API = "https://script.google.com/macros/s/AKfycbxknTIwCNprGaNG0v6hXGsliYGjvjC3lnm2QJz2F3cELkXHl3Z2xkqVgRcfJofCOS8Otg/exec";
+const CONFIGURACAO = window.BRAVONEXO_CONFIG || {};
+const URL_API = String(CONFIGURACAO.apiUrl || "").trim();
+
+function aplicarConfiguracaoUnidade() {
+  const nomeSistema = CONFIGURACAO.nomeSistema || "Sistema de Permutas";
+  const nomeUnidade = CONFIGURACAO.nomeUnidade || "Unidade não configurada";
+  const versao = CONFIGURACAO.versao || "";
+
+  document.title = nomeSistema + " - " + nomeUnidade;
+
+  const subtitulo = document.getElementById("nomeUnidade");
+  const rodape = document.getElementById("rodapeSistema");
+  const brasao = document.getElementById("brasaoUnidade");
+  const tituloApple = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+
+  if (subtitulo) subtitulo.textContent = nomeUnidade;
+  if (rodape) rodape.textContent = "Sistema interno de solicitação de permutas " + versao + " • " + nomeUnidade;
+  if (brasao) {
+    brasao.src = CONFIGURACAO.brasao || "brasao.png";
+    brasao.alt = "Brasão do " + nomeUnidade;
+  }
+  if (tituloApple) tituloApple.setAttribute("content", CONFIGURACAO.nomeCurto || ("Permutas " + nomeUnidade));
+}
 
 const rgEntra = document.getElementById("rgEntra");
 const rgSai = document.getElementById("rgSai");
@@ -27,9 +49,14 @@ let timerConsultaEntra = null;
 let timerConsultaSai = null;
 let ultimoRgConsultado = "";
 
+aplicarConfiguracaoUnidade();
 carregarMilitares();
 
 async function chamarApi(acao, dados = {}) {
+  if (!URL_API) {
+    throw new Error("Configuração da unidade não encontrada.");
+  }
+
   const resposta = await fetch(URL_API, {
     method: "POST",
     headers: {
