@@ -3,104 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0b3d91">
-  <meta name="application-name" content="Sistema de Permutas">
-  <meta name="apple-mobile-web-app-title" content="Permutas 1º GBM">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
-  <title>Sistema de Permutas - 1º GBM</title>
-
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-  <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <meta http-equiv="refresh" content="0; url=./01gbm/">
+  <title>BravoNexo — Permutas</title>
+  <script>window.location.replace("./01gbm/" + window.location.search + window.location.hash);</script>
 </head>
-
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="topo-brasao">
-        <img id="brasaoUnidade" src="brasao.png" alt="Brasão da unidade">
-      </div>
-      
-      <div class="titulo">Sistema de Permutas</div>
-      <div id="nomeUnidade" class="subtitulo">1º GBM</div>
-
-      <form id="formPermuta">
-        <div class="campo">
-          <label for="email">E-mail do Responsável pela Permuta</label>
-          <input type="email" id="email" required autocomplete="email">
-        </div>
-
-        <div class="campo">
-          <label for="dataServico">Data do Serviço</label>
-          <div class="campo-data-wrapper">
-            <input type="date" id="dataServico" required>
-          </div>
-          <div id="avisoPrazoPermuta" class="aviso-prazo"></div>
-        </div>
-
-        <div class="campo">
-          <label for="rgEntra">RG do Militar que Entra</label>
-          <input type="text" id="rgEntra" inputmode="numeric" maxlength="7" required>
-          <div id="idEntra" class="identificacao"></div>
-        </div>
-
-        <div class="campo">
-          <label for="rgSai">RG do Militar que Sai</label>
-          <input type="text" id="rgSai" inputmode="numeric" maxlength="7" required>
-          <div id="idSai" class="identificacao"></div>
-        </div>
-
-        <div class="campo">
-          <label for="observacoes">Observações</label>
-          <textarea id="observacoes" placeholder="Digite aqui alguma informação adicional, se necessário."></textarea>
-        </div>
-
-        <button type="submit" id="btnEnviar">Enviar Solicitação</button>
-
-        <div id="mensagem" class="mensagem"></div>
-      </form>
-
-      <div class="consulta-box">
-        <button type="button" id="btnAbrirConsulta" class="botao-secundario">
-          Consultar Permutas Futuras
-        </button>
-
-        <div id="areaConsulta" class="area-consulta">
-          <div class="campo">
-            <label for="rgConsulta">RG para Consulta</label>
-            <input type="text" id="rgConsulta" inputmode="numeric" maxlength="7">
-          </div>
-
-          <button type="button" id="btnConsultar">Consultar</button>
-
-          <div id="resultadoConsulta" class="resultado-consulta"></div>
-        </div>
-      </div>
-
-      <div class="consulta-box historico-box">
-        <button type="button" id="btnAbrirHistorico" class="botao-secundario botao-historico">
-          Ver histórico dos últimos 40 dias
-        </button>
-
-        <div id="areaHistorico" class="area-consulta">
-          <div class="campo">
-            <label for="rgHistorico">RG para Consulta</label>
-            <input type="text" id="rgHistorico" inputmode="numeric" maxlength="7">
-          </div>
-
-          <button type="button" id="btnConsultarHistorico">Consultar Histórico</button>
-
-          <div id="resultadoHistorico" class="resultado-consulta"></div>
-        </div>
-      </div>
-
-      <div id="rodapeSistema" class="rodape">Sistema interno de solicitação de permutas v3.68 • 1º GBM</div>
-    </div>
-  </div>
-
-  <script src="config/01gbm.js?v=1"></script>
-  <script src="script.js?v=3.68.0"></script>
+  <p>Abrindo o Sistema de Permutas do 1º GBM…</p>
+  <p><a href="./01gbm/">Clique aqui caso o redirecionamento não aconteça.</a></p>
 </body>
 </html>

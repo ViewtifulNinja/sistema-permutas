@@ -1,55 +1,46 @@
-# BravoNexo — Sistema de Permutas
+# BravoNexo — Permutas
 
 Interface web compartilhada do módulo de Permutas do BravoNexo.
 
-A implantação atualmente publicada atende ao **1º GBM**, mantendo o endereço já utilizado pela unidade:
+## Endereços
+
+- Entrada do módulo: https://bravonexo.github.io/permutas/
+- 1º GBM: https://bravonexo.github.io/permutas/01gbm/
+
+Durante a migração, o endereço anterior permanece como compatibilidade:
 
 - https://bmbrunocosta.github.io/sistema-permutas/
 
-## Arquitetura
+## Estrutura multiunidade
 
-O projeto foi preparado para atender vários GBMs sem duplicação do código principal:
+```text
+index.html          entrada do módulo e redirecionamento inicial
+shared/             código e estilos compartilhados
+01gbm/              página, configuração e manifesto do 1º GBM
+18gbm/              futura configuração do 18º GBM
+```
+
+A interface e as regras comuns ficam em `shared/`. Cada unidade recebe uma pasta própria com sua identificação e o endereço do respectivo Apps Script.
+
+## Arquitetura
 
 ```text
 GitHub Pages        → interface compartilhada
-config/<unidade>.js → identificação e endereço do backend de cada GBM
+<unidade>/config.js → identificação e backend do GBM
 Google Apps Script  → processamento, validações e API da unidade
-Google Sheets       → base de dados administrativa da unidade
+Google Sheets       → base administrativa da unidade
 ```
 
-Cada GBM deve continuar com sua própria conta Google, planilha, Apps Script e implantação. Apenas a interface comum é compartilhada.
+Cada GBM deve utilizar sua própria conta Google, planilha, Apps Script e implantação.
 
-## Estrutura
+## Unidade disponível
 
-```text
-index.html          estrutura da página
-style.css           aparência visual compartilhada
-script.js           funcionamento e comunicação com o backend
-config/01gbm.js     configuração ativa do 1º GBM
-brasao.png          brasão usado pela configuração do 1º GBM
-manifest.json       instalação como aplicativo/PWA do 1º GBM
-```
+### 1º GBM
 
-## Funcionalidades
-
-- solicitação de permuta;
-- identificação automática dos militares pelo RG;
-- validação do e-mail do responsável;
-- registro na planilha da unidade;
-- confirmação automática por e-mail;
-- aviso de solicitação fora do prazo de 48 horas;
-- consulta de permutas futuras;
-- histórico dos últimos 40 dias;
-- solicitação e confirmação de cancelamento por código;
-- bloqueio de cancelamento quando a permuta já foi analisada ou está fora do prazo.
-
-## Configuração atual
-
-- Unidade: 1º GBM
-- Configuração: `config/01gbm.js`
+- Caminho: `01gbm/`
 - Interface: v3.68
 - Backend: implantação 68 do Apps Script
 
 ## Segurança
 
-O GitHub Pages publica arquivos estáticos na internet. Não devem ser adicionados ao repositório senhas, tokens, chaves privadas ou dados pessoais. Toda autorização de leitura ou escrita deve ser validada no Apps Script.
+O GitHub Pages é público. Não devem ser adicionados ao repositório senhas, tokens, chaves privadas ou dados pessoais. A autorização das operações deve ser validada no backend do Apps Script.

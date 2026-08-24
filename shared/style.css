@@ -1,0 +1,488 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #ffffff;
+  color: #1f2933;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+}
+
+.card {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 26px 18px 24px;
+  background: #ffffff;
+}
+
+.topo-brasao {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.topo-brasao img {
+  width: 84px;
+  height: auto;
+  display: inline-block;
+}
+
+.titulo {
+  text-align: center;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 900;
+  color: #102a43;
+  margin: 0 0 8px;
+}
+
+.subtitulo {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 600;
+  color: #627d98;
+  margin: 0 0 28px;
+}
+
+.campo {
+  width: 100%;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #334e68;
+}
+
+input,
+textarea {
+  display: block;
+  width: 100%;
+  border: 2px solid #bcccdc;
+  border-radius: 16px;
+  padding: 15px 14px;
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: center;
+  background: #ffffff;
+  color: #102a43;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #0b5cad;
+  box-shadow: 0 0 0 5px rgba(11, 92, 173, 0.18);
+}
+
+.campo-data-wrapper {
+  width: 100%;
+  border: 2px solid #bcccdc;
+  border-radius: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.campo-data-wrapper:focus-within {
+  border-color: #0b5cad;
+  box-shadow: 0 0 0 5px rgba(11, 92, 173, 0.18);
+}
+
+.campo-data-wrapper input[type="date"] {
+  width: 100%;
+  min-height: 58px;
+  border: none;
+  border-radius: 0;
+  padding: 15px 14px;
+  background: #ffffff;
+  color: #102a43;
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: center;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.campo-data-wrapper input[type="date"]:focus {
+  box-shadow: none;
+}
+
+.campo-data-wrapper input[type="date"]::-webkit-date-and-time-value {
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.campo-data-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.85;
+}
+
+.aviso-prazo {
+  display: none;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fdecea;
+  color: #842029;
+  font-size: 15px;
+  line-height: 1.35;
+  font-weight: 800;
+  text-align: center;
+}
+
+.aviso-prazo.ativo {
+  display: block;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+  text-align: left;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.identificacao {
+  margin-top: 7px;
+  min-height: 26px;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #0b5cad;
+  text-align: center;
+}
+
+.erro-identificacao {
+  color: #c0392b;
+  font-weight: 900;
+}
+
+button {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 17px;
+  padding: 20px 14px;
+  font-size: 21px;
+  line-height: 1.2;
+  font-weight: 900;
+  color: #ffffff;
+  background: #0b5cad;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+button:hover {
+  background: #084985;
+}
+
+button:disabled {
+  background: #9fb3c8;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: #eef5ff;
+  color: #0b5cad;
+  border: 2px solid #0b5cad;
+  margin-top: 16px;
+}
+
+.botao-secundario:hover {
+  background: #dbeafe;
+}
+
+.botao-historico {
+  color: #485fc7;
+  border-color: #485fc7;
+  background: #f3f4ff;
+}
+
+.botao-historico:hover {
+  background: #e7e9ff;
+}
+
+.historico-box {
+  margin-top: 12px;
+}
+
+.mensagem {
+  margin-top: 26px;
+  padding: 16px;
+  border-radius: 16px;
+  text-align: center;
+  display: none;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.mensagem.sucesso {
+  display: block;
+  background: #e3f9e5;
+  color: #0f5132;
+}
+
+.mensagem.erro {
+  display: block;
+  background: #fdecea;
+  color: #842029;
+}
+
+.consulta-box {
+  margin-top: 22px;
+}
+
+.area-consulta {
+  display: none;
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 2px solid #e4e7eb;
+}
+
+.area-consulta.ativa {
+  display: block;
+}
+
+.resultado-consulta {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.card-permuta {
+  border: 1.5px solid #d9e2ec;
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: #f8fbff;
+  color: #102a43;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.card-permuta .data {
+  font-size: 17px;
+  font-weight: 900;
+  color: #0b5cad;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.card-permuta .linha-permuta {
+  margin-bottom: 4px;
+}
+
+.card-permuta .rotulo {
+  font-weight: 900;
+  color: #334e68;
+}
+
+.card-permuta .status {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #e4e7eb;
+  font-weight: 900;
+  text-align: center;
+}
+
+.status-feito {
+  color: #1f8f3a;
+}
+
+.status-cancelada {
+  color: #b3261e;
+}
+
+.status-pendente {
+  color: #b7791f;
+}
+
+.mensagem-consulta {
+  padding: 14px;
+  border-radius: 14px;
+  background: #eef5ff;
+  color: #102a43;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.campo,
+button,
+.mensagem,
+.consulta-box {
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+input,
+textarea,
+.campo-data-wrapper {
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.campo-data-wrapper input[type="date"] {
+  max-width: none;
+}
+
+button {
+  max-width: 520px;
+}
+
+.area-consulta {
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.resultado-consulta {
+  width: 100%;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rodape {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 13px;
+  color: #829ab1;
+}
+
+.container,
+.card,
+.campo,
+.consulta-box,
+.area-consulta,
+.resultado-consulta {
+  max-width: 100%;
+}
+
+.botao-cancelar {
+  background: #fff4f4;
+  color: #b3261e;
+  border: 2px solid #b3261e;
+  margin-top: 12px;
+  padding: 13px 12px;
+  font-size: 16px;
+  border-radius: 13px;
+}
+
+.botao-cancelar:hover {
+  background: #fdecea;
+}
+
+.area-cancelamento {
+  display: none;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e4e7eb;
+}
+
+.area-cancelamento.ativa {
+  display: block;
+}
+
+.area-cancelamento input {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 17px;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.botao-enviar-codigo,
+.botao-confirmar-cancelamento {
+  margin-top: 8px;
+  padding: 13px 12px;
+  font-size: 16px;
+  border-radius: 13px;
+}
+
+.botao-confirmar-cancelamento {
+  background: #b3261e;
+}
+
+.botao-confirmar-cancelamento:hover {
+  background: #8f1f18;
+}
+
+.mensagem-cancelamento {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 800;
+  text-align: center;
+  display: none;
+}
+
+.mensagem-cancelamento.sucesso {
+  display: block;
+  background: #e3f9e5;
+  color: #0f5132;
+}
+
+.mensagem-cancelamento.erro {
+  display: block;
+  background: #fdecea;
+  color: #842029;
+}
+
+.aviso-cancelamento-indisponivel {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f6f7f9;
+  color: #627d98;
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 800;
+  text-align: center;
+}
+
+.card-historico {
+  background: #fbfbff;
+  border-color: #dcdff5;
+}
+
+.motivo-cancelamento-historico {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: #fdecea;
+  color: #842029;
+  font-size: 13px;
+  line-height: 1.4;
+}
